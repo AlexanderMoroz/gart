@@ -1,0 +1,4 @@
+{
+  "extends": "@gart/tooling/tsconfig/base.json",
+  "include": ["src"]
+}

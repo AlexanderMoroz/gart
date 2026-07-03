@@ -1,0 +1,23 @@
+{
+  "name": "@gart/domain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "rich-domain": "1.27.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.2",
+    "@gart/tooling": "workspace:*",
+    "typescript": "6.0.3",
+    "vitest": "4.1.9"
+  }
+}

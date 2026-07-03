@@ -1,0 +1,81 @@
+:root {
+  --bg: #0e0f11;
+  --fg: #e8e6e1;
+  --muted: #8a8781;
+  --ember: #ff5a1f;
+  color-scheme: dark;
+}
+
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem clamp(1.5rem, 6vw, 5rem);
+  background: radial-gradient(
+    60rem 40rem at 85% -10%,
+    rgba(255, 90, 31, 0.08),
+    transparent 60%
+  );
+}
+
+.wordmark {
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 38rem;
+  gap: 1.25rem;
+}
+
+.hero h1 {
+  font-size: clamp(3.5rem, 10vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.definition {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  border-left: 2px solid var(--ember);
+  padding-left: 1rem;
+}
+
+.definition .lang {
+  font-style: italic;
+}
+
+.pitch {
+  font-size: 1.15rem;
+  line-height: 1.65;
+}
+
+.status {
+  color: var(--ember);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+.footer {
+  color: var(--muted);
+  font-size: 0.85rem;
+}

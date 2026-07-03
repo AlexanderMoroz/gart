@@ -1,0 +1,27 @@
+# deps
+node_modules/
+
+# builds
+dist/
+.turbo/
+
+# expo / react native
+.expo/
+apps/mobile/ios/
+apps/mobile/android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# env
+.env
+.env.*
+!.env.example
+
+# misc
+.DS_Store
+*.log
+.idea/
+.vscode/
