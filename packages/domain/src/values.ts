@@ -13,8 +13,51 @@ export type Reps = z.output<typeof Reps>
 export const Rpe = z.number().min(1).max(10).multipleOf(0.5).brand<'Rpe'>()
 export type Rpe = z.output<typeof Rpe>
 
-export const SetType = z.enum(['warmup', 'working', 'drop', 'failure'])
+export const SET_TYPES = ['warmup', 'working', 'drop', 'failure'] as const
+export const SetType = z.enum(SET_TYPES)
 export type SetType = z.output<typeof SetType>
+
+// Locked at maximum granularity (notes/data-model.md §5). Single source of
+// truth — the db pg enum and the contract both consume these lists.
+export const MUSCLE_GROUPS = [
+  'chest',
+  'upper_back',
+  'lats',
+  'traps',
+  'lower_back',
+  'front_delts',
+  'side_delts',
+  'rear_delts',
+  'biceps',
+  'triceps',
+  'forearms',
+  'quads',
+  'hamstrings',
+  'glutes',
+  'adductors',
+  'abductors',
+  'hip_flexors',
+  'abs',
+  'obliques',
+  'calves',
+  'neck',
+  'full_body',
+] as const
+export const MuscleGroup = z.enum(MUSCLE_GROUPS)
+export type MuscleGroup = z.output<typeof MuscleGroup>
+
+export const EQUIPMENT = [
+  'barbell',
+  'dumbbell',
+  'machine',
+  'cable',
+  'bodyweight',
+  'band',
+  'kettlebell',
+  'other',
+] as const
+export const Equipment = z.enum(EQUIPMENT)
+export type Equipment = z.output<typeof Equipment>
 
 // What was planned. All fields optional by design — "people are free to mess
 // things up"; the contract layer may tighten per use-case.

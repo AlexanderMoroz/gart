@@ -1,69 +1,23 @@
+import { EQUIPMENT, MUSCLE_GROUPS, SET_TYPES, session } from '@gart/domain'
 import { pgEnum } from 'drizzle-orm/pg-core'
 
-// Locked at maximum granularity (notes/data-model.md §5) — grouping and
-// filtering must be reliable, so enum, not free text.
-export const muscleGroup = pgEnum('muscle_group', [
-  'chest',
-  'upper_back',
-  'lats',
-  'traps',
-  'lower_back',
-  'front_delts',
-  'side_delts',
-  'rear_delts',
-  'biceps',
-  'triceps',
-  'forearms',
-  'quads',
-  'hamstrings',
-  'glutes',
-  'adductors',
-  'abductors',
-  'hip_flexors',
-  'abs',
-  'obliques',
-  'calves',
-  'neck',
-  'full_body',
-])
+// Value lists live in @gart/domain (single source of truth for db, contract,
+// and MCP tool schemas). This file only binds them to pg enum types.
 
-export const equipment = pgEnum('equipment', [
-  'barbell',
-  'dumbbell',
-  'machine',
-  'cable',
-  'bodyweight',
-  'band',
-  'kettlebell',
-  'other',
-])
+export const muscleGroup = pgEnum('muscle_group', MUSCLE_GROUPS)
+export const equipment = pgEnum('equipment', EQUIPMENT)
+export const setType = pgEnum('set_type', SET_TYPES)
 
+export const sessionType = pgEnum('session_type', session.SESSION_TYPES)
+export const sessionStatus = pgEnum('session_status', session.SESSION_STATUSES)
+export const sessionOrigin = pgEnum('session_origin', session.SESSION_ORIGINS)
+export const sessionExerciseStatus = pgEnum(
+  'session_exercise_status',
+  session.ENTRY_STATUSES,
+)
+
+// db-local for now — not yet ubiquitous-language terms
 export const weightUnit = pgEnum('weight_unit', ['kg', 'lb'])
-
-export const sessionType = pgEnum('session_type', ['strength'])
-export const sessionStatus = pgEnum('session_status', [
-  'planned',
-  'active',
-  'completed',
-  'abandoned',
-])
-export const sessionOrigin = pgEnum('session_origin', [
-  'mcp',
-  'routine',
-  'adhoc',
-])
-export const sessionExerciseStatus = pgEnum('session_exercise_status', [
-  'planned',
-  'done',
-  'skipped',
-])
-export const setType = pgEnum('set_type', [
-  'warmup',
-  'working',
-  'drop',
-  'failure',
-])
-
 export const healthMetricType = pgEnum('health_metric_type', [
   'heart_rate',
   'active_calories',

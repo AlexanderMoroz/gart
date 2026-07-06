@@ -11,9 +11,22 @@ export type SessionEntryId = IdOf<typeof SessionEntryId>
 export const SetId = brandedId('SetId')
 export type SetId = IdOf<typeof SetId>
 
-export type SessionType = 'strength'
-export type SessionOrigin = 'mcp' | 'routine' | 'adhoc'
-export type EntryStatus = 'planned' | 'done' | 'skipped'
+export const SESSION_TYPES = ['strength'] as const
+export type SessionType = (typeof SESSION_TYPES)[number]
+
+export const SESSION_STATUSES = [
+  'planned',
+  'active',
+  'completed',
+  'abandoned',
+] as const
+export type SessionStatus = (typeof SESSION_STATUSES)[number]
+
+export const SESSION_ORIGINS = ['mcp', 'routine', 'adhoc'] as const
+export type SessionOrigin = (typeof SESSION_ORIGINS)[number]
+
+export const ENTRY_STATUSES = ['planned', 'done', 'skipped'] as const
+export type EntryStatus = (typeof ENTRY_STATUSES)[number]
 
 // A set carries plan and/or fact at value level (data-model.md §3):
 // ad-hoc → performance only · planned-not-done → prescription only · done → both.
