@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx src/seed/run.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
@@ -27,6 +28,7 @@
     "@types/node": "26.1.0",
     "@types/pg": "8.20.0",
     "drizzle-kit": "0.31.10",
+    "tsx": "4.22.5",
     "typescript": "6.0.3"
   }
 }
