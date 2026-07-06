@@ -1,0 +1,20 @@
+# Local dev infrastructure. Start: docker compose up -d
+services:
+  db:
+    image: postgres:17-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: gart
+      POSTGRES_PASSWORD: gart
+      POSTGRES_DB: gart
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U gart -d gart']
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+volumes:
+  db-data:

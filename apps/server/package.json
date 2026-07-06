@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "auth:schema": "npx --yes @better-auth/cli@latest generate --config src/auth.ts --output ../../packages/db/src/schema/auth.ts -y",
     "dev": "tsx watch src/index.ts",
     "build": "tsup",
     "start": "node dist/index.js",
