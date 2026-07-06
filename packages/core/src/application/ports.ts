@@ -1,7 +1,7 @@
 import type { UserId } from '../domain/ids'
 import type * as session from '../domain/session'
 import type { DomainError } from '../kernel/error'
-import type { Result } from '../kernel/result'
+import type { UnitOfWork as KernelUnitOfWork } from '../kernel/unit-of-work'
 import type {
   ExerciseFilter,
   ExerciseListItem,
@@ -34,12 +34,10 @@ export type ExerciseCatalog = {
   list(userId: UserId, filter: ExerciseFilter): Promise<ExerciseListItem[]>
 }
 
-// Atomic boundary for state-changing use-cases. The adapter must roll the
-// transaction back when the callback resolves to an err Result.
+// Atomic boundary for state-changing use-cases — the kernel's generic
+// UnitOfWork specialized to this application's repository set.
 export type TxRepos = Readonly<{ sessions: SessionRepo }>
-export type UnitOfWork = <T, E>(
-  work: (repos: TxRepos) => Promise<Result<T, E>>,
-) => Promise<Result<T, E>>
+export type UnitOfWork = KernelUnitOfWork<TxRepos>
 
 export type Deps = Readonly<{
   uow: UnitOfWork
