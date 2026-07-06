@@ -1,7 +1,7 @@
+import type { app, session, UserId } from '@gart/core'
 import { sessionExercises, sessions, sets } from '@gart/db'
-import type { session, UserId } from '@gart/domain'
 import { and, desc, eq, inArray } from 'drizzle-orm'
-import type { SessionRepo } from '../../app/ports'
+
 import type { DbLike } from '../../db'
 import { sessionToDomain, sessionToRows } from './mappers'
 
@@ -22,7 +22,7 @@ async function loadChildren(dbx: DbLike, sessionIds: string[]) {
   return { entryRows, setRows }
 }
 
-export function makeSessionRepo(dbx: DbLike): SessionRepo {
+export function makeSessionRepo(dbx: DbLike): app.SessionRepo {
   return {
     async findById(userId: UserId, sessionId: string) {
       const rows = await dbx

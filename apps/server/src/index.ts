@@ -1,4 +1,4 @@
-import type { UserId } from '@gart/domain'
+import { app, type UserId } from '@gart/core'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { RPCHandler } from '@orpc/server/fastify'
 import { fromNodeHeaders } from 'better-auth/node'
@@ -8,7 +8,6 @@ import { makeSessionRepo } from './adapters/drizzle/session-repo'
 import { makeUnitOfWork } from './adapters/drizzle/unit-of-work'
 import { makeMcpServer } from './api/mcp'
 import { makeRouter } from './api/rpc'
-import { makeApp } from './app'
 import { auth } from './auth'
 import { db } from './db'
 import { env } from './env'
@@ -17,12 +16,13 @@ import { env } from './env'
 //   /api/auth/*  better-auth (identity for app and MCP clients)
 //   /rpc/*       oRPC — the mobile app's API
 //   /mcp         MCP Streamable HTTP — the models' API
-// All faces share the same use-cases (src/app) over the same domain + Postgres.
+// All faces share the same use-cases (@gart/core application layer) over the
+// same domain + Postgres.
 
 const server = Fastify({ logger: true })
 
-// Composition root: adapters implement the app layer's ports.
-const app = makeApp({
+// Composition root: adapters implement the core's ports.
+const useCases = app.makeApp({
   uow: makeUnitOfWork(db),
   sessions: makeSessionRepo(db),
   exercises: makeExerciseCatalog(db),
@@ -75,7 +75,7 @@ server.route({
 
 // ── oRPC (app face) ─────────────────────────────────────────────────────────
 
-const rpcHandler = new RPCHandler(makeRouter(app))
+const rpcHandler = new RPCHandler(makeRouter(useCases))
 
 server.all('/rpc/*', async (request, reply) => {
   const { matched } = await rpcHandler.handle(request, reply, {
@@ -100,7 +100,7 @@ server.post('/mcp', async (request, reply) => {
     })
     return
   }
-  const mcp = makeMcpServer(app, { userId })
+  const mcp = makeMcpServer(useCases, { userId })
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,

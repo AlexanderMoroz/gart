@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@gart/domain": "workspace:*",
+    "@gart/core": "workspace:*",
     "@orpc/contract": "1.14.6",
     "zod": "4.4.3"
   },

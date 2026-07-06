@@ -102,12 +102,12 @@ importers:
       '@gart/contract':
         specifier: workspace:*
         version: link:../../packages/contract
+      '@gart/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@gart/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@gart/domain':
-        specifier: workspace:*
-        version: link:../../packages/domain
       '@modelcontextprotocol/sdk':
         specifier: 1.29.0
         version: 1.29.0(zod@4.4.3)
@@ -185,9 +185,9 @@ importers:
 
   packages/contract:
     dependencies:
-      '@gart/domain':
+      '@gart/core':
         specifier: workspace:*
-        version: link:../domain
+        version: link:../core
       '@orpc/contract':
         specifier: 1.14.6
         version: 1.14.6
@@ -205,11 +205,33 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  packages/core:
+    dependencies:
+      neverthrow:
+        specifier: 8.2.0
+        version: 8.2.0
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 2.5.2
+        version: 2.5.2
+      '@gart/tooling':
+        specifier: workspace:*
+        version: link:../tooling
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 4.1.9
+        version: 4.1.9(@types/node@26.1.0)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.5)(yaml@2.9.0))
+
   packages/db:
     dependencies:
-      '@gart/domain':
+      '@gart/core':
         specifier: workspace:*
-        version: link:../domain
+        version: link:../core
       drizzle-orm:
         specifier: 0.45.2
         version: 0.45.2(@types/pg@8.20.0)(kysely@0.29.2)(pg@8.22.0)
@@ -241,28 +263,6 @@ importers:
       typescript:
         specifier: 6.0.3
         version: 6.0.3
-
-  packages/domain:
-    dependencies:
-      neverthrow:
-        specifier: 8.2.0
-        version: 8.2.0
-      zod:
-        specifier: 4.4.3
-        version: 4.4.3
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 2.5.2
-        version: 2.5.2
-      '@gart/tooling':
-        specifier: workspace:*
-        version: link:../tooling
-      typescript:
-        specifier: 6.0.3
-        version: 6.0.3
-      vitest:
-        specifier: 4.1.9
-        version: 4.1.9(@types/node@26.1.0)(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(terser@5.48.0)(tsx@4.22.5)(yaml@2.9.0))
 
   packages/tooling: {}
 

@@ -1,5 +1,5 @@
 import type { SessionDto } from '@gart/contract'
-import type { session } from '@gart/domain'
+import type { session } from '@gart/core'
 
 // domain → wire. Faces own this mapping; use-cases return domain state.
 export function sessionToDto(s: session.Session): SessionDto {

@@ -1,7 +1,7 @@
-import { EQUIPMENT, MUSCLE_GROUPS, SET_TYPES, session } from '@gart/domain'
+import { EQUIPMENT, MUSCLE_GROUPS, SET_TYPES, session } from '@gart/core'
 import { pgEnum } from 'drizzle-orm/pg-core'
 
-// Value lists live in @gart/domain (single source of truth for db, contract,
+// Value lists live in @gart/core (single source of truth for db, contract,
 // and MCP tool schemas). This file only binds them to pg enum types.
 
 export const muscleGroup = pgEnum('muscle_group', MUSCLE_GROUPS)

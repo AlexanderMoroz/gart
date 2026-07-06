@@ -14,14 +14,15 @@ apps/
   server/     Fastify — one deployable, three faces: oRPC + MCP + better-auth
   web/        gart.fit — static placeholder landing page (Vite + React)
 packages/
+  core/       the functional core: kernel + domain aggregates + application
+              (ports, commands, use-cases) — pure TS, zero IO deps
   contract/   oRPC contract + Zod schemas — source of truth for app & MCP tools
-  domain/     functional domain kernel + aggregates, pure TS, zero IO deps
   db/         Drizzle schema + migrations (Postgres)
   tooling/    shared tsconfig bases (lint/format = Biome, biome.json at root)
 ```
 
-Dependency arrows point inward only: `server → contract/domain/db`,
-`mobile/web → contract`, `domain → nothing`.
+Dependency arrows point inward only: `server → contract/core/db`,
+`mobile/web → contract`, `contract/db → core`, `core → nothing`.
 
 ## Getting started
 

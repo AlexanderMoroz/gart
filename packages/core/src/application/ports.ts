@@ -1,12 +1,15 @@
+import type { UserId } from '../domain/ids'
+import type * as session from '../domain/session'
+import type { DomainError } from '../kernel/error'
+import type { Result } from '../kernel/result'
 import type {
-  ExerciseDto,
-  GetRecentSessionsInput,
-  ListExercisesInput,
-} from '@gart/contract'
-import type { DomainError, Result, session, UserId } from '@gart/domain'
+  ExerciseFilter,
+  ExerciseListItem,
+  RecentSessionsQuery,
+} from './commands'
 
 // The application layer's view of the outside world. Implementations live in
-// src/adapters/ — use-cases only ever see these types.
+// the deployable's adapters — use-cases only ever see these types.
 
 export type Actor = Readonly<{ userId: UserId }>
 
@@ -23,13 +26,12 @@ export type SessionRepo = {
   save(s: session.Session): Promise<void>
   listRecent(
     userId: UserId,
-    input: GetRecentSessionsInput,
+    query: RecentSessionsQuery,
   ): Promise<session.Session[]>
 }
 
-// Read model over the catalog — returns wire DTOs directly, no aggregate.
 export type ExerciseCatalog = {
-  list(userId: UserId, input: ListExercisesInput): Promise<ExerciseDto[]>
+  list(userId: UserId, filter: ExerciseFilter): Promise<ExerciseListItem[]>
 }
 
 // Atomic boundary for state-changing use-cases. The adapter must roll the

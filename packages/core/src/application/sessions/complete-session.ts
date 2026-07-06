@@ -1,4 +1,7 @@
-import { err, ok, session, type UseCase } from '@gart/domain'
+import * as session from '../../domain/session'
+import { err, ok } from '../../kernel/result'
+import type { UseCase } from '../../kernel/use-case'
+import type { SessionRef } from '../commands'
 import {
   type Actor,
   type Deps,
@@ -10,7 +13,7 @@ export type CompleteSessionError = SessionNotFound | session.WrongSessionState
 
 export type CompleteSession = UseCase<
   Actor,
-  { sessionId: string },
+  SessionRef,
   session.CompletedSession,
   CompleteSessionError
 >

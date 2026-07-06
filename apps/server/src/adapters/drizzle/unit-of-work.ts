@@ -1,6 +1,6 @@
+import type { app, Result } from '@gart/core'
 import type { Db } from '@gart/db'
-import type { Result } from '@gart/domain'
-import type { TxRepos, UnitOfWork } from '../../app/ports'
+
 import { makeSessionRepo } from './session-repo'
 
 // drizzle only rolls back on throw — an err Result must not commit, so it
@@ -11,9 +11,9 @@ class RollbackSignal extends Error {
   }
 }
 
-export function makeUnitOfWork(db: Db): UnitOfWork {
+export function makeUnitOfWork(db: Db): app.UnitOfWork {
   return async <T, E>(
-    work: (repos: TxRepos) => Promise<Result<T, E>>,
+    work: (repos: app.TxRepos) => Promise<Result<T, E>>,
   ): Promise<Result<T, E>> => {
     try {
       return await db.transaction(async (tx) => {

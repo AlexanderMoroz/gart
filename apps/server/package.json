@@ -15,7 +15,7 @@
   "dependencies": {
     "@gart/contract": "workspace:*",
     "@gart/db": "workspace:*",
-    "@gart/domain": "workspace:*",
+    "@gart/core": "workspace:*",
     "@modelcontextprotocol/sdk": "1.29.0",
     "@orpc/openapi": "1.14.6",
     "@orpc/server": "1.14.6",

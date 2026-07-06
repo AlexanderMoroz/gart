@@ -1,10 +1,10 @@
+import type { app, ExerciseId } from '@gart/core'
 import { exercises, movements } from '@gart/db'
-import type { ExerciseId } from '@gart/domain'
 import { and, arrayContains, asc, eq, ilike, isNull, or } from 'drizzle-orm'
-import type { ExerciseCatalog } from '../../app/ports'
+
 import type { DbLike } from '../../db'
 
-export function makeExerciseCatalog(dbx: DbLike): ExerciseCatalog {
+export function makeExerciseCatalog(dbx: DbLike): app.ExerciseCatalog {
   return {
     async list(userId, input) {
       const rows = await dbx

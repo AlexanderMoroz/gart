@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { brandedId, type IdOf } from './kernel'
+import { brandedId, type IdOf } from '../kernel'
 
 // Cross-aggregate identifiers. Aggregates reference each other by id only —
 // these live outside any single aggregate module on purpose.

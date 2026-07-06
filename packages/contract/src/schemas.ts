@@ -10,10 +10,10 @@ import {
   SetType,
   session,
   WeightKg,
-} from '@gart/domain'
+} from '@gart/core'
 import { z } from 'zod'
 
-// Wire DTOs and inputs. Value objects and enum lists come from @gart/domain —
+// Wire DTOs and inputs. Value objects and enum lists come from @gart/core —
 // one source of truth for app client, MCP tool schemas, and OpenAPI docs.
 // userId never appears on the wire: it comes from the auth context.
 

@@ -1,5 +1,5 @@
+import { brandedId, type IdOf } from '../../kernel'
 import type { ExerciseId, RoutineId, UserId } from '../ids'
-import { brandedId, type IdOf } from '../kernel'
 import type { Performance, Prescription, SetType } from '../values'
 
 export const SessionId = brandedId('SessionId')

@@ -1,5 +1,5 @@
 {
-  "name": "@gart/domain",
+  "name": "@gart/core",
   "version": "0.0.0",
   "private": true,
   "type": "module",

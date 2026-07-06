@@ -1,4 +1,4 @@
-import type { DomainError } from '@gart/domain'
+import type { DomainError } from '@gart/core'
 import { ORPCError } from '@orpc/server'
 
 // Use-cases return tagged errors; only the faces decide what a failure

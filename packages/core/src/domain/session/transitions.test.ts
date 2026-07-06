@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { ExerciseId, UserId } from '../index'
-import { newId, Reps, session, WeightKg } from '../index'
+import type { ExerciseId, UserId } from '../../index'
+import { newId, Reps, session, WeightKg } from '../../index'
 
 const T0 = new Date('2026-07-06T10:00:00.000Z')
 const hoursAfter = (h: number) => new Date(T0.getTime() + h * 60 * 60 * 1000)

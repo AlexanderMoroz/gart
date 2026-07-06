@@ -1,5 +1,7 @@
-import type { LogSetInput } from '@gart/contract'
-import { err, ok, session, type UseCase } from '@gart/domain'
+import * as session from '../../domain/session'
+import { err, ok } from '../../kernel/result'
+import type { UseCase } from '../../kernel/use-case'
+import type { LogSetCommand } from '../commands'
 import {
   type Actor,
   type Deps,
@@ -17,22 +19,22 @@ export type LogSetResult = Readonly<{
   setId: session.SetId
 }>
 
-export type LogSet = UseCase<Actor, LogSetInput, LogSetResult, LogSetError>
+export type LogSet = UseCase<Actor, LogSetCommand, LogSetResult, LogSetError>
 
 export function makeLogSet({
   uow,
   clock,
   events,
 }: Pick<Deps, 'uow' | 'clock' | 'events'>): LogSet {
-  return (actor, input) =>
+  return (actor, command) =>
     uow(async ({ sessions }) => {
-      const stored = await sessions.findById(actor.userId, input.sessionId)
-      if (!stored) return err(sessionNotFound(input.sessionId))
+      const stored = await sessions.findById(actor.userId, command.sessionId)
+      if (!stored) return err(sessionNotFound(command.sessionId))
 
       const active = session.ensureActive(stored)
       if (active.isErr()) return err(active.error)
 
-      const logged = session.logSet(active.value, input, clock())
+      const logged = session.logSet(active.value, command, clock())
       if (logged.isErr()) return err(logged.error)
 
       const [next, event] = logged.value

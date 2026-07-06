@@ -1,5 +1,5 @@
+import { defineEvent } from '../../kernel'
 import type { ExerciseId } from '../ids'
-import { defineEvent } from '../kernel'
 import type { Performance } from '../values'
 import type { SessionEntryId, SessionId, SessionOrigin, SetId } from './model'
 

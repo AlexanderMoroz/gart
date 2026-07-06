@@ -1,6 +1,6 @@
+import type { DomainError, Result, Transitioned } from '../../kernel'
+import { err, newId, ok, transitioned } from '../../kernel'
 import type { ExerciseId, RoutineId, UserId } from '../ids'
-import type { DomainError, Result, Transitioned } from '../kernel'
-import { err, newId, ok, transitioned } from '../kernel'
 import type {
   Performance,
   Prescription,

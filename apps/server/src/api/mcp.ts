@@ -5,9 +5,8 @@ import {
   LogSetInput,
   SessionRefInput,
 } from '@gart/contract'
-import type { DomainError } from '@gart/domain'
+import type { app, DomainError } from '@gart/core'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import type { Actor, App } from '../app'
 import { sessionToDto } from './dto'
 
 const json = (data: unknown) => ({
@@ -28,7 +27,7 @@ const fail = (error: DomainError) => ({
 // The model face: few meaty tools, thin mappings over the same use-cases as
 // oRPC. Input schemas are the contract's — one source of truth.
 // Scoped per request: every tool call acts as the authenticated user.
-export function makeMcpServer(app: App, actor: Actor) {
+export function makeMcpServer(useCases: app.App, actor: app.Actor) {
   const server = new McpServer({ name: 'gart', version: '0.1.0' })
 
   server.registerTool(
@@ -39,7 +38,8 @@ export function makeMcpServer(app: App, actor: Actor) {
         'Search the exercise catalog (movement × equipment). Filter by free-text query, muscle group, or equipment.',
       inputSchema: ListExercisesInput.shape,
     },
-    async (input) => (await app.exercises.list(actor, input)).match(json, fail),
+    async (input) =>
+      (await useCases.exercises.list(actor, input)).match(json, fail),
   )
 
   server.registerTool(
@@ -51,7 +51,7 @@ export function makeMcpServer(app: App, actor: Actor) {
       inputSchema: GetRecentSessionsInput.shape,
     },
     async (input) =>
-      (await app.sessions.listRecent(actor, input)).match(
+      (await useCases.sessions.listRecent(actor, input)).match(
         (found) => json(found.map(sessionToDto)),
         fail,
       ),
@@ -66,10 +66,15 @@ export function makeMcpServer(app: App, actor: Actor) {
       inputSchema: CreateSessionInput.shape,
     },
     async (input) =>
-      (await app.sessions.create(actor, { input, origin: 'mcp' })).match(
-        (s) => json(sessionToDto(s)),
-        fail,
-      ),
+      (
+        await useCases.sessions.create(actor, {
+          origin: 'mcp',
+          routineId: input.routineId,
+          plannedFor: input.plannedFor ? new Date(input.plannedFor) : undefined,
+          note: input.note,
+          entries: input.entries,
+        })
+      ).match((s) => json(sessionToDto(s)), fail),
   )
 
   server.registerTool(
@@ -81,7 +86,7 @@ export function makeMcpServer(app: App, actor: Actor) {
       inputSchema: SessionRefInput.shape,
     },
     async (input) =>
-      (await app.sessions.start(actor, input)).match(
+      (await useCases.sessions.start(actor, input)).match(
         (s) => json(sessionToDto(s)),
         fail,
       ),
@@ -96,7 +101,7 @@ export function makeMcpServer(app: App, actor: Actor) {
       inputSchema: LogSetInput.shape,
     },
     async (input) =>
-      (await app.sessions.logSet(actor, input)).match(
+      (await useCases.sessions.logSet(actor, input)).match(
         ({ session, setId }) => json({ session: sessionToDto(session), setId }),
         fail,
       ),
@@ -111,7 +116,7 @@ export function makeMcpServer(app: App, actor: Actor) {
       inputSchema: SessionRefInput.shape,
     },
     async (input) =>
-      (await app.sessions.complete(actor, input)).match(
+      (await useCases.sessions.complete(actor, input)).match(
         (s) => json(sessionToDto(s)),
         fail,
       ),

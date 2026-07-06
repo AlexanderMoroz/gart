@@ -1,4 +1,3 @@
-import type { sessionExercises, sessions, sets } from '@gart/db'
 import type {
   ExerciseId,
   Performance,
@@ -9,7 +8,8 @@ import type {
   session,
   UserId,
   WeightKg,
-} from '@gart/domain'
+} from '@gart/core'
+import type { sessionExercises, sessions, sets } from '@gart/db'
 
 export type SessionRow = typeof sessions.$inferSelect
 export type EntryRow = typeof sessionExercises.$inferSelect
