@@ -92,9 +92,11 @@ export type GetRecentSessionsInput = z.output<typeof GetRecentSessionsInput>
 const note = z.string().max(2000).optional()
 
 // origin is NOT client-supplied — the server face (app vs MCP) decides it.
+// plannedFor is a calendar date, not an instant — ISO string on the wire
+// (also keeps MCP tool schemas JSON-Schema-representable).
 export const CreateSessionInput = z.object({
   routineId: RoutineId.optional(),
-  plannedFor: z.date().optional(),
+  plannedFor: z.iso.date().optional(),
   note,
   entries: z
     .array(
