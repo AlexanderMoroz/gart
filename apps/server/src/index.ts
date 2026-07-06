@@ -3,24 +3,32 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { RPCHandler } from '@orpc/server/fastify'
 import { fromNodeHeaders } from 'better-auth/node'
 import Fastify from 'fastify'
+import { makeExerciseCatalog } from './adapters/drizzle/exercise-catalog'
+import { makeSessionRepo } from './adapters/drizzle/session-repo'
+import { makeUnitOfWork } from './adapters/drizzle/unit-of-work'
 import { makeMcpServer } from './api/mcp'
 import { makeRouter } from './api/rpc'
+import { makeApp } from './app'
 import { auth } from './auth'
 import { db } from './db'
 import { env } from './env'
-import { makeUseCases } from './use-cases'
 
 // One deployable, three faces (see notes/stack.md):
 //   /api/auth/*  better-auth (identity for app and MCP clients)
 //   /rpc/*       oRPC — the mobile app's API
 //   /mcp         MCP Streamable HTTP — the models' API
-// All faces share the same use-cases over the same domain + Postgres.
+// All faces share the same use-cases (src/app) over the same domain + Postgres.
 
-const app = Fastify({ logger: true })
+const server = Fastify({ logger: true })
 
-const uc = makeUseCases(db, (event) =>
-  app.log.info({ domainEvent: event }, event.type),
-)
+// Composition root: adapters implement the app layer's ports.
+const app = makeApp({
+  uow: makeUnitOfWork(db),
+  sessions: makeSessionRepo(db),
+  exercises: makeExerciseCatalog(db),
+  clock: () => new Date(),
+  events: (event) => server.log.info({ domainEvent: event }, event.type),
+})
 
 async function currentUserId(request: {
   headers: Record<string, unknown>
@@ -35,7 +43,7 @@ async function currentUserId(request: {
 
 // ── better-auth ─────────────────────────────────────────────────────────────
 
-app.route({
+server.route({
   method: ['GET', 'POST'],
   url: '/api/auth/*',
   async handler(request, reply) {
@@ -67,9 +75,9 @@ app.route({
 
 // ── oRPC (app face) ─────────────────────────────────────────────────────────
 
-const rpcHandler = new RPCHandler(makeRouter(uc))
+const rpcHandler = new RPCHandler(makeRouter(app))
 
-app.all('/rpc/*', async (request, reply) => {
+server.all('/rpc/*', async (request, reply) => {
   const { matched } = await rpcHandler.handle(request, reply, {
     prefix: '/rpc',
     context: { userId: await currentUserId(request) },
@@ -82,7 +90,7 @@ app.all('/rpc/*', async (request, reply) => {
 // to the authenticated user. TODO: OAuth 2.1 discovery + DCR so MCP clients
 // can onboard with just the URL; bearer session tokens work today.
 
-app.post('/mcp', async (request, reply) => {
+server.post('/mcp', async (request, reply) => {
   const userId = await currentUserId(request)
   if (!userId) {
     reply.code(401).send({
@@ -92,22 +100,22 @@ app.post('/mcp', async (request, reply) => {
     })
     return
   }
-  const server = makeMcpServer(uc, { userId })
+  const mcp = makeMcpServer(app, { userId })
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
   })
   reply.raw.on('close', () => {
     void transport.close()
-    void server.close()
+    void mcp.close()
   })
-  await server.connect(transport)
+  await mcp.connect(transport)
   reply.hijack()
   await transport.handleRequest(request.raw, reply.raw, request.body)
 })
 
 for (const method of ['GET', 'DELETE'] as const) {
-  app.route({
+  server.route({
     method,
     url: '/mcp',
     handler: (_request, reply) => {
@@ -122,9 +130,9 @@ for (const method of ['GET', 'DELETE'] as const) {
 
 // ── plain health for Coolify ────────────────────────────────────────────────
 
-app.get('/health', () => ({ status: 'ok' as const }))
+server.get('/health', () => ({ status: 'ok' as const }))
 
-app.listen({ port: env.PORT, host: '0.0.0.0' }).catch((err: unknown) => {
-  app.log.error(err)
+server.listen({ port: env.PORT, host: '0.0.0.0' }).catch((err: unknown) => {
+  server.log.error(err)
   process.exit(1)
 })
