@@ -1,7 +1,8 @@
-// Pure domain layer — rich-domain aggregates, zero IO dependencies.
-//
-// Aggregates (Program → Session → Exercise → Set), progression rules and
-// PR detection land here after the data-modeling session. Until then this
-// package only pins the dependency and the layering boundary.
+// Pure domain layer — functional kernel (fs-ddd style), zero IO dependencies.
+// Aggregate boundary = module boundary: `import { session } from '@gart/domain'`
+// and call lowercase transitions (session.start, session.logSet, ...).
 
-export const DOMAIN_PLACEHOLDER = true
+export * from './ids'
+export * from './kernel'
+export * as session from './session'
+export * from './values'

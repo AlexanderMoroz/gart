@@ -15,7 +15,7 @@ apps/
   web/        gart.fit — static placeholder landing page (Vite + React)
 packages/
   contract/   oRPC contract + Zod schemas — source of truth for app & MCP tools
-  domain/     rich-domain aggregates, pure TS, zero IO deps
+  domain/     functional domain kernel + aggregates, pure TS, zero IO deps
   db/         Drizzle schema + migrations (Postgres)
   tooling/    shared tsconfig bases (lint/format = Biome, biome.json at root)
 ```
