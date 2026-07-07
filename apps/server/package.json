@@ -14,11 +14,12 @@
   },
   "dependencies": {
     "@gart/contract": "workspace:*",
-    "@gart/db": "workspace:*",
     "@gart/core": "workspace:*",
+    "@gart/db": "workspace:*",
     "@modelcontextprotocol/sdk": "1.29.0",
     "@orpc/openapi": "1.14.6",
     "@orpc/server": "1.14.6",
+    "@orpc/zod": "1.14.6",
     "better-auth": "1.6.23",
     "drizzle-orm": "0.45.2",
     "fastify": "5.9.0",

@@ -1,6 +1,13 @@
+import { contract } from '@gart/contract'
 import { app, type UserId } from '@gart/core'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
+import { OpenAPIGenerator } from '@orpc/openapi'
+import { OpenAPIHandler } from '@orpc/openapi/fastify'
 import { RPCHandler } from '@orpc/server/fastify'
+import {
+  experimental_ZodSmartCoercionPlugin as ZodSmartCoercionPlugin,
+  ZodToJsonSchemaConverter,
+} from '@orpc/zod/zod4'
 import { fromNodeHeaders } from 'better-auth/node'
 import Fastify from 'fastify'
 import { makeExerciseCatalog } from './adapters/drizzle/exercise-catalog'
@@ -75,11 +82,39 @@ server.route({
 
 // ── oRPC (app face) ─────────────────────────────────────────────────────────
 
-const rpcHandler = new RPCHandler(makeRouter(useCases))
+const router = makeRouter(useCases)
+const rpcHandler = new RPCHandler(router)
 
 server.all('/rpc/*', async (request, reply) => {
   const { matched } = await rpcHandler.handle(request, reply, {
     prefix: '/rpc',
+    context: { userId: await currentUserId(request) },
+  })
+  if (!matched) reply.code(404).send({ error: 'not found' })
+})
+
+// ── OpenAPI (human face) ────────────────────────────────────────────────────
+// Same router, RESTful shape from the contract's route metadata — for
+// Postman/curl exploration. Spec at /api/v1/spec.json (Postman-importable).
+
+// smart coercion: query strings → the schema's expected primitives
+const openapiHandler = new OpenAPIHandler(router, {
+  plugins: [new ZodSmartCoercionPlugin()],
+})
+const openapiGenerator = new OpenAPIGenerator({
+  schemaConverters: [new ZodToJsonSchemaConverter()],
+})
+
+server.get('/api/v1/spec.json', async () =>
+  openapiGenerator.generate(contract, {
+    info: { title: 'Gart API', version: '0.1.0' },
+    servers: [{ url: '/api/v1' }],
+  }),
+)
+
+server.all('/api/v1/*', async (request, reply) => {
+  const { matched } = await openapiHandler.handle(request, reply, {
+    prefix: '/api/v1',
     context: { userId: await currentUserId(request) },
   })
   if (!matched) reply.code(404).send({ error: 'not found' })
