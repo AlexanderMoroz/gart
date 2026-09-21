@@ -1,6 +1,11 @@
 import { brandedId, type IdOf } from '../../kernel'
 import type { ExerciseId, RoutineId, UserId } from '../ids'
-import type { Performance, Prescription, SetType } from '../values'
+import type {
+  CalendarDate,
+  Performance,
+  Prescription,
+  SetType,
+} from '../values'
 
 export const SessionId = brandedId('SessionId')
 export type SessionId = IdOf<typeof SessionId>
@@ -55,7 +60,7 @@ type SessionBase = Readonly<{
   type: SessionType
   origin: SessionOrigin
   routineId?: RoutineId
-  plannedFor?: Date
+  plannedFor?: CalendarDate
   note?: string
   entries: readonly SessionEntry[]
 }>

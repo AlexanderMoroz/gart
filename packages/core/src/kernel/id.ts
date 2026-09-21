@@ -12,6 +12,6 @@ export function brandedId<B extends string>(_brand: B) {
 
 export type IdOf<S extends z.ZodType> = z.output<S>
 
-export function newId<T extends string>(): T {
-  return crypto.randomUUID() as T
+export function newId<S extends z.ZodUUID>(_id: S): IdOf<S> {
+  return crypto.randomUUID() as IdOf<S>
 }

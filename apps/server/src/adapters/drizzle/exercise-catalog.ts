@@ -1,20 +1,25 @@
-import type { app, ExerciseId } from '@gart/core'
+import type { app, ExerciseId, UserId } from '@gart/core'
 import { exercises, movements } from '@gart/db'
-import { and, arrayContains, asc, eq, ilike, isNull, or } from 'drizzle-orm'
+import { and, arrayContains, asc, eq, ilike, inArray, or } from 'drizzle-orm'
 
 import type { DbLike } from '../../db'
 
+const visibleTo = (viewer: UserId) =>
+  and(
+    eq(exercises.isArchived, false),
+    or(eq(exercises.scope, 'global'), eq(exercises.ownerId, viewer)),
+  )
+
 export function makeExerciseCatalog(dbx: DbLike): app.ExerciseCatalog {
   return {
-    async list(userId, input) {
+    async list(viewer, input) {
       const rows = await dbx
         .select({ exercise: exercises, movement: movements })
         .from(exercises)
         .innerJoin(movements, eq(exercises.movementId, movements.id))
         .where(
           and(
-            eq(exercises.isArchived, false),
-            or(isNull(exercises.ownerId), eq(exercises.ownerId, userId)),
+            visibleTo(viewer),
             input.equipment
               ? eq(exercises.equipment, input.equipment)
               : undefined,
@@ -39,6 +44,24 @@ export function makeExerciseCatalog(dbx: DbLike): app.ExerciseCatalog {
           primaryMuscles: movement.primaryMuscles,
           secondaryMuscles: movement.secondaryMuscles,
         },
+      }))
+    },
+
+    async findByIds(ids) {
+      const rows = await dbx
+        .select({
+          id: exercises.id,
+          scope: exercises.scope,
+          ownerId: exercises.ownerId,
+          isArchived: exercises.isArchived,
+        })
+        .from(exercises)
+        .where(inArray(exercises.id, [...ids]))
+      return rows.map((row) => ({
+        id: row.id as ExerciseId,
+        scope: row.scope,
+        ownerId: (row.ownerId ?? undefined) as UserId | undefined,
+        isArchived: row.isArchived,
       }))
     },
   }

@@ -1,28 +1,41 @@
 import * as session from '../../domain/session'
-import { ok } from '../../kernel/result'
+import { err, ok } from '../../kernel/result'
+import { commit } from '../../kernel/unit-of-work'
 import type { UseCase } from '../../kernel/use-case'
+import { ensureExercisesVisible } from '../access'
 import type { CreateSessionCommand } from '../commands'
+import type { ExerciseNotFound } from '../errors'
 import type { Actor, Deps } from '../ports'
+
+export type CreateSessionError = ExerciseNotFound
 
 export type CreateSession = UseCase<
   Actor,
   CreateSessionCommand,
-  session.PlannedSession
+  session.PlannedSession,
+  CreateSessionError
 >
 
 export function makeCreateSession({
   uow,
+  exercises,
   clock,
-  events,
-}: Pick<Deps, 'uow' | 'clock' | 'events'>): CreateSession {
-  return (actor, command) =>
-    uow(async ({ sessions }) => {
+}: Pick<Deps, 'uow' | 'exercises' | 'clock'>): CreateSession {
+  return async (actor, command) => {
+    const visible = await ensureExercisesVisible(
+      exercises,
+      actor,
+      (command.entries ?? []).map((e) => e.exerciseId),
+    )
+    if (visible.isErr()) return err(visible.error)
+
+    return uow(async ({ sessions }) => {
       const [planned, event] = session.plan(
         { ...command, userId: actor.userId },
         clock(),
       )
       await sessions.insert(planned)
-      events(event)
-      return ok(planned)
+      return ok(commit(planned, event))
     })
+  }
 }

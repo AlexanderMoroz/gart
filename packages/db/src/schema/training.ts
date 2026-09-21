@@ -76,7 +76,7 @@ export const sessions = pgTable(
     routineId: uuid('routine_id').references(() => routines.id, {
       onDelete: 'set null',
     }),
-    plannedFor: date('planned_for', { mode: 'date' }),
+    plannedFor: date('planned_for', { mode: 'string' }),
     startedAt: timestamp('started_at', { withTimezone: true }),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     abandonedAt: timestamp('abandoned_at', { withTimezone: true }),

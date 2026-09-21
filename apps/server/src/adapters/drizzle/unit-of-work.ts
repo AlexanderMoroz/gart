@@ -1,4 +1,10 @@
-import type { app, Result } from '@gart/core'
+import {
+  type app,
+  type Commit,
+  ok,
+  type Result,
+  type session,
+} from '@gart/core'
 import type { Db } from '@gart/db'
 
 import { makeSessionRepo } from './session-repo'
@@ -11,19 +17,29 @@ class RollbackSignal extends Error {
   }
 }
 
-export function makeUnitOfWork(db: Db): app.UnitOfWork {
+export function makeUnitOfWork(
+  db: Pick<Db, 'transaction'>,
+  events: app.EventSink,
+): app.UnitOfWork {
   return async <T, E>(
-    work: (repos: app.TxRepos) => Promise<Result<T, E>>,
+    work: (
+      repos: app.TxRepos,
+    ) => Promise<Result<Commit<T, session.SessionEvent>, E>>,
   ): Promise<Result<T, E>> => {
+    let committed: Commit<T, session.SessionEvent>
     try {
-      return await db.transaction(async (tx) => {
-        const result = await work({ sessions: makeSessionRepo(tx) })
+      committed = await db.transaction(async (tx) => {
+        const result = await work({
+          sessions: makeSessionRepo(tx, { forUpdate: true }),
+        })
         if (result.isErr()) throw new RollbackSignal(result)
-        return result
+        return result.value
       })
     } catch (error) {
       if (error instanceof RollbackSignal) return error.result as Result<T, E>
       throw error
     }
+    for (const event of committed.events) events(event)
+    return ok(committed.value)
   }
 }

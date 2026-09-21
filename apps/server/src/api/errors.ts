@@ -15,6 +15,11 @@ export function raise(error: DomainError): never {
         message: error.message ?? error.type,
         data: error,
       })
+    case 'ExerciseNotFound':
+      throw new ORPCError('UNPROCESSABLE_CONTENT', {
+        message: error.message ?? error.type,
+        data: error,
+      })
     default:
       throw new ORPCError('BAD_REQUEST', {
         message: error.message ?? error.type,

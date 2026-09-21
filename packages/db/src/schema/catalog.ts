@@ -1,5 +1,7 @@
+import { sql } from 'drizzle-orm'
 import {
   boolean,
+  check,
   index,
   pgTable,
   text,
@@ -7,7 +9,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 import { user } from './auth'
-import { equipment, muscleGroup } from './enums'
+import { equipment, exerciseScope, muscleGroup } from './enums'
 
 // Exercise = Movement × Equipment (× variation). Muscle groups live on the
 // Movement and are inherited. Catalog rows are referenced by history —
@@ -35,14 +37,20 @@ export const exercises = pgTable(
     name: text('name').notNull(),
     variation: text('variation'),
     instructions: text('instructions'),
-    // NULL = global catalog entry; set = user's custom exercise
+    scope: exerciseScope('scope').notNull().default('global'),
     ownerId: text('owner_id').references(() => user.id, {
-      onDelete: 'set null',
+      onDelete: 'cascade',
     }),
     isArchived: boolean('is_archived').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
-  (t) => [index('exercises_movement_id_idx').on(t.movementId)],
+  (t) => [
+    index('exercises_movement_id_idx').on(t.movementId),
+    check(
+      'exercises_scope_owner_check',
+      sql`("scope" = 'global' AND "owner_id" IS NULL) OR ("scope" = 'user' AND "owner_id" IS NOT NULL)`,
+    ),
+  ],
 )

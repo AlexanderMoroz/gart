@@ -1,4 +1,4 @@
-import { and, eq, isNull } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { createDb } from '../index'
 import { exercises, movements } from '../schema/index'
 import { EXERCISES, MOVEMENTS } from './data'
@@ -75,7 +75,7 @@ async function main() {
           and(
             eq(exercises.name, e.name),
             eq(exercises.equipment, e.equipment),
-            isNull(exercises.ownerId),
+            eq(exercises.scope, 'global'),
           ),
         )
         .limit(1)

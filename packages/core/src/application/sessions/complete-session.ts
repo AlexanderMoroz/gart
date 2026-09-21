@@ -1,13 +1,10 @@
 import * as session from '../../domain/session'
 import { err, ok } from '../../kernel/result'
+import { commit } from '../../kernel/unit-of-work'
 import type { UseCase } from '../../kernel/use-case'
 import type { SessionRef } from '../commands'
-import {
-  type Actor,
-  type Deps,
-  type SessionNotFound,
-  sessionNotFound,
-} from '../ports'
+import { type SessionNotFound, sessionNotFound } from '../errors'
+import type { Actor, Deps } from '../ports'
 
 export type CompleteSessionError = SessionNotFound | session.WrongSessionState
 
@@ -21,8 +18,7 @@ export type CompleteSession = UseCase<
 export function makeCompleteSession({
   uow,
   clock,
-  events,
-}: Pick<Deps, 'uow' | 'clock' | 'events'>): CompleteSession {
+}: Pick<Deps, 'uow' | 'clock'>): CompleteSession {
   return (actor, { sessionId }) =>
     uow(async ({ sessions }) => {
       const stored = await sessions.findById(actor.userId, sessionId)
@@ -33,7 +29,6 @@ export function makeCompleteSession({
 
       const [completed, event] = session.complete(active.value, clock())
       await sessions.save(completed)
-      events(event)
-      return ok(completed)
+      return ok(commit(completed, event))
     })
 }

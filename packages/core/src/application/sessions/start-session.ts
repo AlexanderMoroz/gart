@@ -1,13 +1,10 @@
 import * as session from '../../domain/session'
 import { err, ok } from '../../kernel/result'
+import { commit } from '../../kernel/unit-of-work'
 import type { UseCase } from '../../kernel/use-case'
 import type { SessionRef } from '../commands'
-import {
-  type Actor,
-  type Deps,
-  type SessionNotFound,
-  sessionNotFound,
-} from '../ports'
+import { type SessionNotFound, sessionNotFound } from '../errors'
+import type { Actor, Deps } from '../ports'
 
 export type StartSessionError = SessionNotFound | session.WrongSessionState
 
@@ -21,8 +18,7 @@ export type StartSession = UseCase<
 export function makeStartSession({
   uow,
   clock,
-  events,
-}: Pick<Deps, 'uow' | 'clock' | 'events'>): StartSession {
+}: Pick<Deps, 'uow' | 'clock'>): StartSession {
   return (actor, { sessionId }) =>
     uow(async ({ sessions }) => {
       const stored = await sessions.findById(actor.userId, sessionId)
@@ -33,7 +29,6 @@ export function makeStartSession({
 
       const [active, event] = session.start(planned.value, clock())
       await sessions.save(active)
-      events(event)
-      return ok(active)
+      return ok(commit(active, event))
     })
 }

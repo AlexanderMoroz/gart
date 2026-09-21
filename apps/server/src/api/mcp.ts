@@ -70,7 +70,7 @@ export function makeMcpServer(useCases: app.App, actor: app.Actor) {
         await useCases.sessions.create(actor, {
           origin: 'mcp',
           routineId: input.routineId,
-          plannedFor: input.plannedFor ? new Date(input.plannedFor) : undefined,
+          plannedFor: input.plannedFor,
           note: input.note,
           entries: input.entries,
         })

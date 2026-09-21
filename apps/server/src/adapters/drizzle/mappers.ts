@@ -1,4 +1,5 @@
 import type {
+  CalendarDate,
   ExerciseId,
   Performance,
   Prescription,
@@ -87,7 +88,7 @@ export function sessionToDomain(
     type: row.type,
     origin: row.origin,
     routineId: opt(row.routineId) as RoutineId | undefined,
-    plannedFor: opt(row.plannedFor),
+    plannedFor: opt(row.plannedFor) as CalendarDate | undefined,
     note: opt(row.note),
     entries,
   }

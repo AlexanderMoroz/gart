@@ -41,9 +41,7 @@ export function makeRouter(useCases: app.App) {
           await useCases.sessions.create(requireActor(context), {
             origin: input.routineId ? 'routine' : 'adhoc',
             routineId: input.routineId,
-            plannedFor: input.plannedFor
-              ? new Date(input.plannedFor)
-              : undefined,
+            plannedFor: input.plannedFor,
             note: input.note,
             entries: input.entries,
           })

@@ -1,7 +1,7 @@
 import { ok } from '../../kernel/result'
 import type { UseCase } from '../../kernel/use-case'
-import type { ExerciseFilter, ExerciseListItem } from '../commands'
 import type { Actor, Deps } from '../ports'
+import type { ExerciseFilter, ExerciseListItem } from '../queries'
 
 export type ListExercises = UseCase<Actor, ExerciseFilter, ExerciseListItem[]>
 

@@ -13,6 +13,9 @@ export type Reps = z.output<typeof Reps>
 export const Rpe = z.number().min(1).max(10).multipleOf(0.5).brand<'Rpe'>()
 export type Rpe = z.output<typeof Rpe>
 
+export const CalendarDate = z.iso.date().brand<'CalendarDate'>()
+export type CalendarDate = z.output<typeof CalendarDate>
+
 export const SET_TYPES = ['warmup', 'working', 'drop', 'failure'] as const
 export const SetType = z.enum(SET_TYPES)
 export type SetType = z.output<typeof SetType>
@@ -58,6 +61,10 @@ export const EQUIPMENT = [
 ] as const
 export const Equipment = z.enum(EQUIPMENT)
 export type Equipment = z.output<typeof Equipment>
+
+export const EXERCISE_SCOPES = ['global', 'user'] as const
+export const ExerciseScope = z.enum(EXERCISE_SCOPES)
+export type ExerciseScope = z.output<typeof ExerciseScope>
 
 // What was planned. All fields optional by design — "people are free to mess
 // things up"; the contract layer may tighten per use-case.

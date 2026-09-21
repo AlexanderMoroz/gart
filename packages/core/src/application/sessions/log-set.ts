@@ -1,16 +1,19 @@
 import * as session from '../../domain/session'
 import { err, ok } from '../../kernel/result'
+import { commit } from '../../kernel/unit-of-work'
 import type { UseCase } from '../../kernel/use-case'
+import { ensureExercisesVisible } from '../access'
 import type { LogSetCommand } from '../commands'
 import {
-  type Actor,
-  type Deps,
+  type ExerciseNotFound,
   type SessionNotFound,
   sessionNotFound,
-} from '../ports'
+} from '../errors'
+import type { Actor, Deps } from '../ports'
 
 export type LogSetError =
   | SessionNotFound
+  | ExerciseNotFound
   | session.WrongSessionState
   | session.LogSetError
 
@@ -23,11 +26,16 @@ export type LogSet = UseCase<Actor, LogSetCommand, LogSetResult, LogSetError>
 
 export function makeLogSet({
   uow,
+  exercises,
   clock,
-  events,
-}: Pick<Deps, 'uow' | 'clock' | 'events'>): LogSet {
-  return (actor, command) =>
-    uow(async ({ sessions }) => {
+}: Pick<Deps, 'uow' | 'exercises' | 'clock'>): LogSet {
+  return async (actor, command) => {
+    const visible = await ensureExercisesVisible(exercises, actor, [
+      command.exerciseId,
+    ])
+    if (visible.isErr()) return err(visible.error)
+
+    return uow(async ({ sessions }) => {
       const stored = await sessions.findById(actor.userId, command.sessionId)
       if (!stored) return err(sessionNotFound(command.sessionId))
 
@@ -39,7 +47,7 @@ export function makeLogSet({
 
       const [next, event] = logged.value
       await sessions.save(next)
-      events(event)
-      return ok({ session: next, setId: event.payload.setId })
+      return ok(commit({ session: next, setId: event.payload.setId }, event))
     })
+  }
 }

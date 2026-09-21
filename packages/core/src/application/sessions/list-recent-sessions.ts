@@ -1,8 +1,8 @@
 import type * as session from '../../domain/session'
 import { ok } from '../../kernel/result'
 import type { UseCase } from '../../kernel/use-case'
-import type { RecentSessionsQuery } from '../commands'
 import type { Actor, Deps } from '../ports'
+import type { RecentSessionsQuery } from '../queries'
 
 export type ListRecentSessions = UseCase<
   Actor,

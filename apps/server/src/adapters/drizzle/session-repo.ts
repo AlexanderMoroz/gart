@@ -22,27 +22,31 @@ async function loadChildren(dbx: DbLike, sessionIds: string[]) {
   return { entryRows, setRows }
 }
 
-export function makeSessionRepo(dbx: DbLike): app.SessionRepo {
+export function makeSessionRepo(
+  dbx: DbLike,
+  options: Readonly<{ forUpdate?: boolean }> = {},
+): app.SessionRepo {
   return {
-    async findById(userId: UserId, sessionId: string) {
-      const rows = await dbx
+    async findById(owner: UserId, sessionId: session.SessionId) {
+      const query = dbx
         .select()
         .from(sessions)
-        .where(and(eq(sessions.id, sessionId), eq(sessions.userId, userId)))
+        .where(and(eq(sessions.id, sessionId), eq(sessions.userId, owner)))
         .limit(1)
+      const rows = await (options.forUpdate ? query.for('update') : query)
       const row = rows[0]
       if (!row) return undefined
       const { entryRows, setRows } = await loadChildren(dbx, [row.id])
       return sessionToDomain(row, entryRows, setRows)
     },
 
-    async listRecent(userId, input) {
+    async listRecent(owner, input) {
       const rows = await dbx
         .select()
         .from(sessions)
         .where(
           and(
-            eq(sessions.userId, userId),
+            eq(sessions.userId, owner),
             input.status ? eq(sessions.status, input.status) : undefined,
           ),
         )
@@ -70,7 +74,9 @@ export function makeSessionRepo(dbx: DbLike): app.SessionRepo {
     },
 
     // Replace strategy: entries/sets are small (≤ dozens per session) and the
-    // aggregate is saved as a whole — delete + reinsert beats diffing.
+    // aggregate is saved as a whole — delete + reinsert beats diffing. Holds
+    // only while nothing else references entry/set rows; switch to a diff when
+    // the first such table lands.
     async save(s: session.Session) {
       const { sessionRow, entryRows, setRows } = sessionToRows(s)
       await dbx

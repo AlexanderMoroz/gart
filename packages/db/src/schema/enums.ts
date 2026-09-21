@@ -1,4 +1,10 @@
-import { EQUIPMENT, MUSCLE_GROUPS, SET_TYPES, session } from '@gart/core'
+import {
+  EQUIPMENT,
+  EXERCISE_SCOPES,
+  MUSCLE_GROUPS,
+  SET_TYPES,
+  session,
+} from '@gart/core'
 import { pgEnum } from 'drizzle-orm/pg-core'
 
 // Value lists live in @gart/core (single source of truth for db, contract,
@@ -7,6 +13,7 @@ import { pgEnum } from 'drizzle-orm/pg-core'
 export const muscleGroup = pgEnum('muscle_group', MUSCLE_GROUPS)
 export const equipment = pgEnum('equipment', EQUIPMENT)
 export const setType = pgEnum('set_type', SET_TYPES)
+export const exerciseScope = pgEnum('exercise_scope', EXERCISE_SCOPES)
 
 export const sessionType = pgEnum('session_type', session.SESSION_TYPES)
 export const sessionStatus = pgEnum('session_status', session.SESSION_STATUSES)

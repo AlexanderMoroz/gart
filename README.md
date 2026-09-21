@@ -36,7 +36,7 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 
 Per app:
 
-- `pnpm --filter @gart/server dev` — API on :3000 (needs Postgres, see apps/server/.env.example)
+- `pnpm --filter @gart/server dev` — API on :3000 (needs Postgres and `apps/server/.env` — copy `.env.example`)
 - `pnpm --filter @gart/web dev` — landing page
 - `pnpm --filter @gart/mobile start` — Expo dev server (custom dev client; Expo Go can't run HealthKit later)
 

@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import type { ExerciseId, UserId } from '../../index'
-import { newId, Reps, session, WeightKg } from '../../index'
+import { ExerciseId, newId, Reps, session, UserId, WeightKg } from '../../index'
 
 const T0 = new Date('2026-07-06T10:00:00.000Z')
 const hoursAfter = (h: number) => new Date(T0.getTime() + h * 60 * 60 * 1000)
 
-const userId = newId<UserId>()
-const benchId = newId<ExerciseId>()
-const squatId = newId<ExerciseId>()
+const userId = UserId.parse('user-1')
+const benchId = newId(ExerciseId)
+const squatId = newId(ExerciseId)
 
 const kg = (n: number) => WeightKg.parse(n)
 const reps = (n: number) => Reps.parse(n)
@@ -108,7 +107,7 @@ describe('logSet', () => {
   it('rejects an unknown set id', () => {
     const result = session.logSet(
       activeBench(),
-      { exerciseId: benchId, setId: newId<session.SetId>(), performance: {} },
+      { exerciseId: benchId, setId: newId(session.SetId), performance: {} },
       hoursAfter(1.1),
     )
     expect(result._unsafeUnwrapErr().type).toBe('UnknownSet')
@@ -256,7 +255,7 @@ describe('amendSet', () => {
   it('rejects an unknown set id', () => {
     const result = session.amendSet(
       activeBench(),
-      newId<session.SetId>(),
+      newId(session.SetId),
       { note: 'nope' },
       hoursAfter(1.2),
     )
@@ -292,7 +291,7 @@ describe('type-level: illegal transitions do not compile', () => {
       session.start(active, T0)
     const _noAmendOnPlanned = () =>
       // @ts-expect-error — amendSet rejects planned sessions
-      session.amendSet(plannedBench()[0], newId<session.SetId>(), {}, T0)
+      session.amendSet(plannedBench()[0], newId(session.SetId), {}, T0)
 
     expect([_noLogOnCompleted, _noDoubleStart, _noAmendOnPlanned]).toHaveLength(
       3,

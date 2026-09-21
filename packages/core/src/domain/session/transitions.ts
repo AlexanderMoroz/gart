@@ -2,6 +2,7 @@ import type { DomainError, Result, Transitioned } from '../../kernel'
 import { err, newId, ok, transitioned } from '../../kernel'
 import type { ExerciseId, RoutineId, UserId } from '../ids'
 import type {
+  CalendarDate,
   Performance,
   Prescription,
   Reps,
@@ -32,13 +33,17 @@ import type {
   PlannedSession,
   Session,
   SessionEntry,
-  SessionEntryId,
-  SessionId,
   SessionOrigin,
   SessionSet,
+} from './model'
+import {
+  AMEND_WINDOW_MS,
+  endedAt,
+  loggedSetCount,
+  SessionEntryId,
+  SessionId,
   SetId,
 } from './model'
-import { AMEND_WINDOW_MS, endedAt, loggedSetCount } from './model'
 
 // ── plan ────────────────────────────────────────────────────────────────────
 
@@ -59,7 +64,7 @@ export type PlanSessionInput = Readonly<{
   userId: UserId
   origin: SessionOrigin
   routineId?: RoutineId
-  plannedFor?: Date
+  plannedFor?: CalendarDate
   note?: string
   entries?: readonly PlanEntryInput[]
 }>
@@ -72,7 +77,7 @@ export function plan(
 ): Transitioned<PlannedSession, SessionPlanned> {
   const entries: readonly SessionEntry[] = (input.entries ?? []).map(
     (entry, i) => ({
-      id: newId<SessionEntryId>(),
+      id: newId(SessionEntryId),
       exerciseId: entry.exerciseId,
       position: i,
       status: 'planned',
@@ -80,7 +85,7 @@ export function plan(
       note: entry.note,
       sets: (entry.sets ?? []).map(
         (set, j): SessionSet => ({
-          id: newId<SetId>(),
+          id: newId(SetId),
           position: j,
           setType: set.setType ?? 'working',
           prescription: set.prescription,
@@ -91,7 +96,7 @@ export function plan(
   )
 
   const session: PlannedSession = {
-    id: newId<SessionId>(),
+    id: newId(SessionId),
     userId: input.userId,
     type: 'strength',
     origin: input.origin,
@@ -231,14 +236,14 @@ export function logSet(
     (e) => e.exerciseId === input.exerciseId,
   )
   const entry: SessionEntry = existing ?? {
-    id: newId<SessionEntryId>(),
+    id: newId(SessionEntryId),
     exerciseId: input.exerciseId,
     position: session.entries.length,
     status: 'planned',
     sets: [],
   }
   const set: SessionSet = {
-    id: newId<SetId>(),
+    id: newId(SetId),
     position: entry.sets.length,
     setType: input.setType ?? 'working',
     performance,

@@ -29,12 +29,13 @@ import { env } from './env'
 const server = Fastify({ logger: true })
 
 // Composition root: adapters implement the core's ports.
+const events: app.EventSink = (event) =>
+  server.log.info({ domainEvent: event }, event.type)
 const useCases = app.makeApp({
-  uow: makeUnitOfWork(db),
+  uow: makeUnitOfWork(db, events),
   sessions: makeSessionRepo(db),
   exercises: makeExerciseCatalog(db),
   clock: () => new Date(),
-  events: (event) => server.log.info({ domainEvent: event }, event.type),
 })
 
 async function currentUserId(request: {

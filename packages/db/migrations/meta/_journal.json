@@ -8,6 +8,13 @@
       "when": 1783365555752,
       "tag": "0000_blushing_jasper_sitwell",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790013881161,
+      "tag": "0001_exercise-scope",
+      "breakpoints": true
     }
   ]
 }

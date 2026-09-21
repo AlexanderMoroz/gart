@@ -1,4 +1,5 @@
 import {
+  CalendarDate,
   Equipment,
   ExerciseId,
   MuscleGroup,
@@ -74,7 +75,7 @@ export const SessionDto = z.object({
   status: z.enum(session.SESSION_STATUSES),
   origin: z.enum(session.SESSION_ORIGINS),
   routineId: RoutineId.optional(),
-  plannedFor: z.date().optional(),
+  plannedFor: CalendarDate.optional(),
   startedAt: z.date().optional(),
   completedAt: z.date().optional(),
   abandonedAt: z.date().optional(),
@@ -96,7 +97,7 @@ const note = z.string().max(2000).optional()
 // (also keeps MCP tool schemas JSON-Schema-representable).
 export const CreateSessionInput = z.object({
   routineId: RoutineId.optional(),
-  plannedFor: z.iso.date().optional(),
+  plannedFor: CalendarDate.optional(),
   note,
   entries: z
     .array(
