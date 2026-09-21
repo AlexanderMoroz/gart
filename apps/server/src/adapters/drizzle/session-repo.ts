@@ -3,7 +3,7 @@ import { sessionExercises, sessions, sets } from '@gart/db'
 import { and, desc, eq, inArray } from 'drizzle-orm'
 
 import type { DbLike } from '../../db'
-import { sessionToDomain, sessionToRows } from './mappers'
+import { sessionToDomain, sessionToRows } from './session-mapper'
 
 async function loadChildren(dbx: DbLike, sessionIds: string[]) {
   if (sessionIds.length === 0) return { entryRows: [], setRows: [] }

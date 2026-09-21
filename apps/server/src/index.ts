@@ -1,13 +1,11 @@
 import { contract } from '@gart/contract'
 import { app, type UserId } from '@gart/core'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
+import { SmartCoercionPlugin } from '@orpc/json-schema'
 import { OpenAPIGenerator } from '@orpc/openapi'
 import { OpenAPIHandler } from '@orpc/openapi/fastify'
 import { RPCHandler } from '@orpc/server/fastify'
-import {
-  experimental_ZodSmartCoercionPlugin as ZodSmartCoercionPlugin,
-  ZodToJsonSchemaConverter,
-} from '@orpc/zod/zod4'
+import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4'
 import { fromNodeHeaders } from 'better-auth/node'
 import Fastify from 'fastify'
 import { makeExerciseCatalog } from './adapters/drizzle/exercise-catalog'
@@ -71,13 +69,16 @@ server.route({
         body: request.body ? JSON.stringify(request.body) : undefined,
       }),
     )
-    reply.status(response.status)
+    const responseHeaders: Record<string, string | string[]> = {}
     response.headers.forEach((value, key) => {
-      if (key !== 'set-cookie') reply.header(key, value)
+      if (key !== 'set-cookie') responseHeaders[key] = value
     })
     const cookies = response.headers.getSetCookie()
-    if (cookies.length > 0) reply.header('set-cookie', cookies)
-    reply.send(response.body ? await response.text() : null)
+    if (cookies.length > 0) responseHeaders['set-cookie'] = cookies
+    return reply
+      .status(response.status)
+      .headers(responseHeaders)
+      .send(response.body ? await response.text() : null)
   },
 })
 
@@ -91,7 +92,7 @@ server.all('/rpc/*', async (request, reply) => {
     prefix: '/rpc',
     context: { userId: await currentUserId(request) },
   })
-  if (!matched) reply.code(404).send({ error: 'not found' })
+  return matched ? reply : reply.code(404).send({ error: 'not found' })
 })
 
 // ── OpenAPI (human face) ────────────────────────────────────────────────────
@@ -99,11 +100,14 @@ server.all('/rpc/*', async (request, reply) => {
 // Postman/curl exploration. Spec at /api/v1/spec.json (Postman-importable).
 
 // smart coercion: query strings → the schema's expected primitives
+const jsonSchemaConverter = new ZodToJsonSchemaConverter()
 const openapiHandler = new OpenAPIHandler(router, {
-  plugins: [new ZodSmartCoercionPlugin()],
+  plugins: [
+    new SmartCoercionPlugin({ schemaConverters: [jsonSchemaConverter] }),
+  ],
 })
 const openapiGenerator = new OpenAPIGenerator({
-  schemaConverters: [new ZodToJsonSchemaConverter()],
+  schemaConverters: [jsonSchemaConverter],
 })
 
 server.get('/api/v1/spec.json', async () =>
@@ -118,7 +122,7 @@ server.all('/api/v1/*', async (request, reply) => {
     prefix: '/api/v1',
     context: { userId: await currentUserId(request) },
   })
-  if (!matched) reply.code(404).send({ error: 'not found' })
+  return matched ? reply : reply.code(404).send({ error: 'not found' })
 })
 
 // ── MCP (model face) ────────────────────────────────────────────────────────
@@ -129,12 +133,11 @@ server.all('/api/v1/*', async (request, reply) => {
 server.post('/mcp', async (request, reply) => {
   const userId = await currentUserId(request)
   if (!userId) {
-    reply.code(401).send({
+    return reply.code(401).send({
       jsonrpc: '2.0',
       error: { code: -32001, message: 'authentication required' },
       id: null,
     })
-    return
   }
   const mcp = makeMcpServer(useCases, { userId })
   const transport = new StreamableHTTPServerTransport({
@@ -146,21 +149,19 @@ server.post('/mcp', async (request, reply) => {
     void mcp.close()
   })
   await mcp.connect(transport)
-  reply.hijack()
-  await transport.handleRequest(request.raw, reply.raw, request.body)
+  await transport.handleRequest(request.raw, reply.hijack().raw, request.body)
 })
 
 for (const method of ['GET', 'DELETE'] as const) {
   server.route({
     method,
     url: '/mcp',
-    handler: (_request, reply) => {
+    handler: (_request, reply) =>
       reply.code(405).send({
         jsonrpc: '2.0',
         error: { code: -32000, message: 'method not allowed' },
         id: null,
-      })
-    },
+      }),
   })
 }
 
@@ -168,7 +169,9 @@ for (const method of ['GET', 'DELETE'] as const) {
 
 server.get('/health', () => ({ status: 'ok' as const }))
 
-server.listen({ port: env.PORT, host: '0.0.0.0' }).catch((err: unknown) => {
+try {
+  await server.listen({ port: env.PORT, host: '0.0.0.0' })
+} catch (err) {
   server.log.error(err)
   process.exit(1)
-})
+}

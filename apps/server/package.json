@@ -17,6 +17,7 @@
     "@gart/core": "workspace:*",
     "@gart/db": "workspace:*",
     "@modelcontextprotocol/sdk": "1.29.0",
+    "@orpc/json-schema": "1.14.6",
     "@orpc/openapi": "1.14.6",
     "@orpc/server": "1.14.6",
     "@orpc/zod": "1.14.6",

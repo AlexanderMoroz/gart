@@ -1,8 +1,9 @@
-import type { app, ExerciseId, UserId } from '@gart/core'
+import type { app, UserId } from '@gart/core'
 import { exercises, movements } from '@gart/db'
 import { and, arrayContains, asc, eq, ilike, inArray, or } from 'drizzle-orm'
 
 import type { DbLike } from '../../db'
+import { toAccess, toListItem } from './exercise-mapper'
 
 const visibleTo = (viewer: UserId) =>
   and(
@@ -31,20 +32,9 @@ export function makeExerciseCatalog(dbx: DbLike): app.ExerciseCatalog {
         )
         .orderBy(asc(exercises.name))
         .limit(input.limit)
-
-      return rows.map(({ exercise, movement }) => ({
-        id: exercise.id as ExerciseId,
-        name: exercise.name,
-        equipment: exercise.equipment,
-        variation: exercise.variation ?? undefined,
-        movement: {
-          id: movement.id,
-          slug: movement.slug,
-          name: movement.name,
-          primaryMuscles: movement.primaryMuscles,
-          secondaryMuscles: movement.secondaryMuscles,
-        },
-      }))
+      return rows.map(({ exercise, movement }) =>
+        toListItem(exercise, movement),
+      )
     },
 
     async findByIds(ids) {
@@ -57,12 +47,7 @@ export function makeExerciseCatalog(dbx: DbLike): app.ExerciseCatalog {
         })
         .from(exercises)
         .where(inArray(exercises.id, [...ids]))
-      return rows.map((row) => ({
-        id: row.id as ExerciseId,
-        scope: row.scope,
-        ownerId: (row.ownerId ?? undefined) as UserId | undefined,
-        isArchived: row.isArchived,
-      }))
+      return rows.map(toAccess)
     },
   }
 }
